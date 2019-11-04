@@ -53,7 +53,6 @@ public class Lesson03MainActivity extends AppCompatActivity implements View.OnCl
             d = fileManager.writeFile(editText.getText().toString()).subscribe(action)
         );
 
-
         Activity that = this;
         buttonRead.setOnClickListener((v) ->
             d1 = fileManager.readFile().subscribeWith(new DisposableObserver() {
