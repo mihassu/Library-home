@@ -53,7 +53,6 @@ public class Lesson03MainActivity extends AppCompatActivity implements View.OnCl
             d = fileManager.writeFile(editText.getText().toString()).subscribe(action)
         );
 
-
         Activity that = this;
         buttonRead.setOnClickListener((v) ->
             d1 = fileManager.readFile().subscribeWith(new DisposableObserver() {
@@ -61,13 +60,11 @@ public class Lesson03MainActivity extends AppCompatActivity implements View.OnCl
                 public void onNext(Object o) {
                     textView.setText(o.toString());
                 }
-
                 @Override
                 public void onError(Throwable e) {
                     e.printStackTrace();
                     Toast.makeText(that, "Чтение не удалось", Toast.LENGTH_SHORT).show();
                 }
-
                 @Override
                 public void onComplete() {
 
