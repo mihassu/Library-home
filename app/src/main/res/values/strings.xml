@@ -2,5 +2,8 @@
     <string name="app_name">Library hw</string>
     <string name="write">Записать</string>
     <string name="read">Читать</string>
+    <string name="load">Загрузить</string>
+    <string name="load_json">Загрузить Json</string>
+
 
 </resources>
