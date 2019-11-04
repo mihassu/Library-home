@@ -9,10 +9,14 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".MainActivity">
+
+        <activity android:name=".MainActivity"></activity>
+        <activity android:name=".lesson03.Lesson03MainActivity"></activity>
+        <activity android:name=".lesson04.Lesson04MainActivity">
 
         </activity>
-        <activity android:name=".lesson03.Lesson03MainActivity">
+
+        <activity android:name=".lesson04.RetrofitActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -20,5 +24,9 @@
             </intent-filter>
         </activity>
     </application>
+
+
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.INTERNET" />
 
 </manifest>
