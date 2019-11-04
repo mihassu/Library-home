@@ -1,0 +1,6 @@
+<resources>
+    <string name="app_name">Library hw</string>
+    <string name="write">Записать</string>
+    <string name="read">Читать</string>
+
+</resources>
