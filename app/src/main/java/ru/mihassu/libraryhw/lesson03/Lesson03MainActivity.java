@@ -60,13 +60,11 @@ public class Lesson03MainActivity extends AppCompatActivity implements View.OnCl
                 public void onNext(Object o) {
                     textView.setText(o.toString());
                 }
-
                 @Override
                 public void onError(Throwable e) {
                     e.printStackTrace();
                     Toast.makeText(that, "Чтение не удалось", Toast.LENGTH_SHORT).show();
                 }
-
                 @Override
                 public void onComplete() {
 
