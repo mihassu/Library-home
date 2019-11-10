@@ -38,10 +38,7 @@ public class Lesson03MainActivity extends AppCompatActivity implements View.OnCl
         super.onCreate(savedInstanceState);
         setContentView(R.layout.lesson03_activity_main);
 
-        editText = findViewById(R.id.edit_text);
-        textView = findViewById(R.id.file_text);
-        buttonWrite = findViewById(R.id.button_write);
-        buttonRead = findViewById(R.id.button_read);
+        initViews();
 //        buttonDispose = findViewById(R.id.button_dispose);
 
         fileManager = new MyFileManager(this);
@@ -71,6 +68,13 @@ public class Lesson03MainActivity extends AppCompatActivity implements View.OnCl
                 }
             })
         );
+    }
+
+    private void initViews() {
+        editText = findViewById(R.id.edit_text);
+        textView = findViewById(R.id.file_text);
+        buttonWrite = findViewById(R.id.button_write);
+        buttonRead = findViewById(R.id.button_read);
     }
 
     @Override
