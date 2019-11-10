@@ -2,5 +2,11 @@
     <string name="app_name">Library hw</string>
     <string name="write">Записать</string>
     <string name="read">Читать</string>
+    <string name="load">Загрузить</string>
+    <string name="load_json">Загрузить Json</string>
+    <string name="save_to_bd">Сохранить в базу</string>
+    <string name="select_all_from_db">Загрузить все из базы</string>
+    <string name="delete_all_from_db">Удалить все из базы</string>
+
 
 </resources>
