@@ -21,6 +21,17 @@ public class RetrofitModel {
     @Expose
     private String name;
 
+    @SerializedName("full_name")
+    @Expose
+    private String fullName;
+
+    @SerializedName("private")
+    @Expose
+    private String privateType;
+
+
+
+
     public String getLogin() {
         return login;
     }
@@ -47,5 +58,13 @@ public class RetrofitModel {
 
     public String getName() {
         return name;
+    }
+
+    public String getFullName() {
+        return fullName;
+    }
+
+    public String getPrivateType() {
+        return privateType;
     }
 }

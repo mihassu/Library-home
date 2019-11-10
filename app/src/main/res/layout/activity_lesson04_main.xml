@@ -1,43 +1,64 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".lesson04.Lesson04MainActivity"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    tools:context=".lesson04.Lesson04MainActivity">
 
-    <ProgressBar android:id="@+id/progress_bar_main"
-        android:layout_width="match_parent"
+    <Button
+        android:id="@+id/button_load"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:text="@string/load" />
+
+    <Button
+        android:id="@+id/button_load_json"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/load_json" />
+
+    <Button
+        android:id="@+id/button_btnSaveAllSugar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/save_to_bd" />
+
+    <Button
+        android:id="@+id/button_btnSelectAllSugar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/select_all_from_db" />
+
+
+    <Button
+        android:id="@+id/button_btnDeleteAllSugar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/delete_all_from_db" />
+
+    <EditText
+        android:id="@+id/edit_text_main"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <ProgressBar
+        android:id="@+id/progress_bar_main"
         style="?android:attr/progressBarStyle"
-        android:visibility="gone"/>
-
-    <EditText android:id="@+id/edit_text_main"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
-
-    <Button android:id="@+id/button_load"
-        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/load"/>
-
-    <Button android:id="@+id/button_load_json"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/load_json"/>
-
-
+        android:visibility="gone" />
 
 
     <androidx.core.widget.NestedScrollView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content">
 
-        <TextView android:id="@+id/text_view_main"
+        <TextView
+            android:id="@+id/text_view_main"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content" />
     </androidx.core.widget.NestedScrollView>
 
 

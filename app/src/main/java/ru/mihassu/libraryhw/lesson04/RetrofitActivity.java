@@ -13,10 +13,17 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.orm.SugarContext;
+
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
-import okhttp3.Headers;
+import io.reactivex.Single;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.observers.DisposableSingleObserver;
+import io.reactivex.schedulers.Schedulers;
 import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -26,6 +33,11 @@ import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 import ru.mihassu.libraryhw.R;
+import ru.mihassu.libraryhw.lesson05.databases.DbProvider;
+import ru.mihassu.libraryhw.lesson05.databases.RealmDbImpl;
+import ru.mihassu.libraryhw.lesson05.entity.NoteRealmData;
+import ru.mihassu.libraryhw.lesson05.entity.SugarModel;
+import ru.mihassu.libraryhw.lesson05.model.MyNote;
 
 
 public class RetrofitActivity extends AppCompatActivity {
@@ -34,17 +46,21 @@ public class RetrofitActivity extends AppCompatActivity {
     private EditText editText;
     private Button buttonLoad;
     private Button buttonLoadJson;
-
+    private Button btnSaveAllSugar;
+    private Button btnSelectAllSugar;
+    private Button btnDeleteAllSugar;
     private TextView textView;
-
     private Retrofit retrofit; //надо делать Singletone
     private RestApi restApi;
     private RestApiForUser restApiForUser;
-
     private OkHttpClient okHttpClient;
-
+    private List<RetrofitModel> modelList = new ArrayList<>();
+    private DbProvider<NoteRealmData, List<MyNote>> dbRealm;
 
     private final String BASE_URL = "https://api.github.com/";
+    private final String USER_NAME = "mihassu";
+    private final String COUNT_KEY = "count";
+    private final String MSEK_KEY = "msek";
 
 
     @Override
@@ -52,18 +68,84 @@ public class RetrofitActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_lesson04_main);
 
-        progressBar = findViewById(R.id.progress_bar_main);
-        editText = findViewById(R.id.edit_text_main);
-        buttonLoad = findViewById(R.id.button_load);
-        buttonLoadJson = findViewById(R.id.button_load_json);
-
-        textView = findViewById(R.id.text_view_main);
+        initViews();
 
         initRetrofit();
         okHttpClient = new OkHttpClient();
 
+        SugarContext.init(getApplicationContext());
+
+        dbRealm = new RealmDbImpl();
+    }
+
+    private void insertToDbRealm() {
+
+        Single<Object> singleInsert = Single.create((emitter) -> {
+            Date first = new Date();
+
+            for (RetrofitModel curModel : modelList) {
+                dbRealm.insert(new NoteRealmData(curModel.getName(), curModel.getFullName(), curModel.getPrivateType()));
+            }
+
+            Date second = new Date();
+            Bundle bundle = new Bundle();
+            bundle.putInt(COUNT_KEY, modelList.size());
+            bundle.putLong(MSEK_KEY, second.getTime() - first.getTime());
+
+            emitter.onSuccess(bundle);
+
+        }).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread());
+
+        singleInsert.subscribeWith(createObserver());
+    }
+
+    private void readFromDbRealm() {
+
+        Single<Object> singleRead = Single.create((emitter) -> {
+
+            Date first = new Date();
+
+            List<MyNote> myNoteList = dbRealm.select();
+
+            textView.setText("");
+            for (MyNote curNote : myNoteList) {
+                textView.append("\nИмя: " + curNote.getName() +
+                        "\nПолное имя: " + curNote.getFullName() +
+                        "\nПриват: " + curNote.getPrivateType() +
+                        "\n-----------------------------");
+            }
+            //Отправить время операции
+            Date second = new Date();
+            Bundle bundle = new Bundle();
+            bundle.putInt(COUNT_KEY, myNoteList.size());
+            bundle.putLong(MSEK_KEY, second.getTime() - first.getTime());
+
+            emitter.onSuccess(bundle);
+
+        }).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread());
+
+        singleRead.subscribeWith(createObserver());
+    }
+
+    private void initViews() {
+        progressBar = findViewById(R.id.progress_bar_main);
+        editText = findViewById(R.id.edit_text_main);
+        buttonLoad = findViewById(R.id.button_load);
+        buttonLoadJson = findViewById(R.id.button_load_json);
+        textView = findViewById(R.id.text_view_main);
+        btnSaveAllSugar = findViewById(R.id.button_btnSaveAllSugar);
+        btnSelectAllSugar = findViewById(R.id.button_btnSelectAllSugar);
+        btnDeleteAllSugar = findViewById(R.id.button_btnDeleteAllSugar);
+
         buttonLoad.setOnClickListener((v) -> load());
         buttonLoadJson.setOnClickListener((v) -> loadJson());
+//        btnSaveAllSugar.setOnClickListener((v) -> saveAllSugar());
+        btnSaveAllSugar.setOnClickListener((v) -> insertToDbRealm());
+//        btnSelectAllSugar.setOnClickListener((v -> selectAllSugar()));
+        btnSelectAllSugar.setOnClickListener((v -> readFromDbRealm()));
+
+        btnDeleteAllSugar.setOnClickListener((v -> deleteAllSugar()));
+
     }
 
     private void initRetrofit() {
@@ -97,8 +179,7 @@ public class RetrofitActivity extends AppCompatActivity {
 
         //Вызов на сервер
 //        Call<List<RetrofitModel>> call = restApi.loadUsers();
-        Call<List<RetrofitModel>> call = restApiForUser.loadUser("mojombo");
-
+        Call<List<RetrofitModel>> call = restApiForUser.loadUser(USER_NAME);
 
         if (internetConnected()) {
             try {
@@ -111,9 +192,7 @@ public class RetrofitActivity extends AppCompatActivity {
         } else {
             Toast.makeText(this, "Нет интернета", Toast.LENGTH_SHORT).show();
         }
-
     }
-
 
     private void downloadOneUrl(Call<List<RetrofitModel>> call) throws IOException {
 
@@ -126,15 +205,24 @@ public class RetrofitActivity extends AppCompatActivity {
 
                         RetrofitModel retrofitModel = null;
 
+                        textView.setText("\nSize: " + response.body().size());
+
                         for (int i = 0; i < response.body().size(); i++) {
 
                             retrofitModel = response.body().get(i);
+
+                            //сохраняем в ArrayList, из которого затем будем загружать в БД
+                            modelList.add(retrofitModel);
+
 //                            textView.append("\nLogin: " + retrofitModel.getLogin() +
 //                                    "\nid: " + retrofitModel.getId() +
 //                                    "\nURL: " + retrofitModel.getAvatarUrl() +
 //                                    "\n------------------------");
                             textView.append("\nname: " + retrofitModel.getName() +
+                                    "\nfull name: " + retrofitModel.getFullName() +
+                                    "\nprivate: " + retrofitModel.getPrivateType() +
                                     "\n------------------------");
+
                         }
                     }
                 } else {
@@ -169,8 +257,9 @@ public class RetrofitActivity extends AppCompatActivity {
     }
 
     private Request createRequest() {
-        HttpUrl.Builder urlBuilder = HttpUrl.parse("https://api.github.com/users/mojombo/repos").newBuilder();
-        urlBuilder.addQueryParameter("login", "mojombo");
+        HttpUrl.Builder urlBuilder = HttpUrl.parse("https://api.github.com/users/mihassu/repos").
+                newBuilder();
+        urlBuilder.addQueryParameter("login", USER_NAME);
 
         String url = urlBuilder.build().toString();
 
@@ -207,6 +296,130 @@ public class RetrofitActivity extends AppCompatActivity {
 
     }
 
+    //Сохранить из ArrayList в базу
+    private void saveAllSugar() {
+        Single<Object> singleSaveAll = Single.create((emitter) -> {
+
+            try {
+                String curName = "";
+                String curFullName = "";
+                String curPrivateType = "";
+                Date first = new Date();
+
+                //Сохранить из ArrayList в БД
+                for (RetrofitModel currentModel : modelList) {
+                    curName = currentModel.getName();
+                    curFullName = currentModel.getFullName();
+                    curPrivateType = currentModel.getPrivateType();
+                    SugarModel sugarModel = new SugarModel(curName, curFullName, curPrivateType);
+                    sugarModel.save();
+                }
+
+                //Отправить время операции
+                Date second = new Date();
+                List<SugarModel> tempList = SugarModel.listAll(SugarModel.class);
+                Bundle bundle = new Bundle();
+                bundle.putInt(COUNT_KEY, tempList.size());
+                bundle.putLong(MSEK_KEY, second.getTime() - first.getTime());
+
+                emitter.onSuccess(bundle);
+            } catch (Exception e) {
+                emitter.onError(e);
+            }
+
+        }).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread());
+
+        singleSaveAll.subscribeWith(createObserver());
+    }
+
+    //Прочитать все из БД
+    private void selectAllSugar() {
+        Single<Object> singleSelectAll = Single.create((emitter) -> {
+
+            textView.setText("");
+            try {
+                Date first = new Date();
+                List<SugarModel> tempList = SugarModel.listAll(SugarModel.class);
+
+                //Отправить время операции
+                Date second = new Date();
+                Bundle bundle = new Bundle();
+                bundle.putInt(COUNT_KEY, tempList.size());
+                bundle.putLong(MSEK_KEY, second.getTime() - first.getTime());
+
+                SugarModel curModel;
+                for (int i = 0; i < tempList.size(); i++) {
+                    curModel = tempList.get(i);
+                    textView.append("Имя: " + curModel.getName() +
+                            "\nПолное имя: " + curModel.getFullName() +
+                            "\nПриватность: " + curModel.getPrivateType());
+                }
+
+                emitter.onSuccess(bundle);
+            } catch (Exception e) {
+                emitter.onError(e);
+            }
+
+        }).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread());
+
+        singleSelectAll.subscribeWith(createObserver());
+    }
+
+    //Удалить все из БД
+    private void deleteAllSugar() {
+        Single<Object> singleDeleteAll = Single.create((emitter) -> {
+
+            textView.setText("");
+            try {
+                Date first = new Date();
+                List<SugarModel> tempList = SugarModel.listAll(SugarModel.class);
+                SugarModel.deleteAll(SugarModel.class);
+
+                //Отправить время операции
+                Date second = new Date();
+                Bundle bundle = new Bundle();
+                bundle.putInt(COUNT_KEY, tempList.size());
+                bundle.putLong(MSEK_KEY, second.getTime() - first.getTime());
+
+                emitter.onSuccess(bundle);
+            } catch (Exception e) {
+                emitter.onError(e);
+            }
+
+        }).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread());
+
+        singleDeleteAll.subscribeWith(createObserver());
+    }
+
+    //Observer который выводит время операции
+    private DisposableSingleObserver<Object> createObserver() {
+        return new DisposableSingleObserver<Object>() {
+
+            @Override
+            protected void onStart() {
+                super.onStart();
+                progressBar.setVisibility(View.VISIBLE);
+                editText.setText("Observer: \n");
+            }
+
+            @Override
+            public void onSuccess(Object bundle) {
+
+                Bundle bundle1 = (Bundle) bundle;
+                progressBar.setVisibility(View.GONE);
+                editText.append("Количество: " + bundle1.getInt(COUNT_KEY) +
+                        "\nВремя: " + bundle1.getLong(MSEK_KEY) + "мс");
+            }
+
+            @Override
+            public void onError(Throwable e) {
+                progressBar.setVisibility(View.GONE);
+                editText.setText("Ошибка БД " + e.getMessage());
+            }
+        };
+    }
+
+
     private boolean internetConnected() {
 
         ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -215,5 +428,11 @@ public class RetrofitActivity extends AppCompatActivity {
             return true;
         }
         return false;
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        SugarContext.terminate();
     }
 }
