@@ -45,5 +45,8 @@ dependencies {
 
     implementation 'com.github.satyan:sugar:1.5'
 
+    implementation 'com.google.dagger:dagger:2.24'
+    annotationProcessor 'com.google.dagger:dagger-compiler:2.24'
+
 
 }

@@ -20,6 +20,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import javax.inject.Inject;
+
 import io.reactivex.Single;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.observers.DisposableSingleObserver;
@@ -32,12 +34,14 @@ import retrofit2.Callback;
 import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
+import ru.mihassu.libraryhw.App;
 import ru.mihassu.libraryhw.R;
 import ru.mihassu.libraryhw.lesson05.databases.DbProvider;
 import ru.mihassu.libraryhw.lesson05.databases.RealmDbImpl;
 import ru.mihassu.libraryhw.lesson05.entity.NoteRealmData;
 import ru.mihassu.libraryhw.lesson05.entity.SugarModel;
 import ru.mihassu.libraryhw.lesson05.model.MyNote;
+import ru.mihassu.libraryhw.lesson06.di.AppComponent;
 
 
 public class RetrofitActivity extends AppCompatActivity {
@@ -50,9 +54,9 @@ public class RetrofitActivity extends AppCompatActivity {
     private Button btnSelectAllSugar;
     private Button btnDeleteAllSugar;
     private TextView textView;
-    private Retrofit retrofit; //надо делать Singletone
-    private RestApi restApi;
-    private RestApiForUser restApiForUser;
+//    private Retrofit retrofit; //надо делать Singletone
+
+//    private RestApiForUser restApiForUser;
     private OkHttpClient okHttpClient;
     private List<RetrofitModel> modelList = new ArrayList<>();
     private DbProvider<NoteRealmData, List<MyNote>> dbRealm;
@@ -62,6 +66,9 @@ public class RetrofitActivity extends AppCompatActivity {
     private final String COUNT_KEY = "count";
     private final String MSEK_KEY = "msek";
 
+    @Inject
+    Call<List<RetrofitModel>> call;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,15 +77,20 @@ public class RetrofitActivity extends AppCompatActivity {
 
         initViews();
 
-        initRetrofit();
+//        initRetrofit();
         okHttpClient = new OkHttpClient();
 
         SugarContext.init(getApplicationContext());
 
         dbRealm = new RealmDbImpl();
+
+        //Dagger
+        AppComponent component = App.getComponent();
+        component.inject(this);
     }
 
     private void insertToDbRealm() {
+
 
         Single<Object> singleInsert = Single.create((emitter) -> {
             Date first = new Date();
@@ -97,6 +109,7 @@ public class RetrofitActivity extends AppCompatActivity {
         }).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread());
 
         singleInsert.subscribeWith(createObserver());
+
     }
 
     private void readFromDbRealm() {
@@ -139,47 +152,42 @@ public class RetrofitActivity extends AppCompatActivity {
 
         buttonLoad.setOnClickListener((v) -> load());
         buttonLoadJson.setOnClickListener((v) -> loadJson());
+
 //        btnSaveAllSugar.setOnClickListener((v) -> saveAllSugar());
         btnSaveAllSugar.setOnClickListener((v) -> insertToDbRealm());
 //        btnSelectAllSugar.setOnClickListener((v -> selectAllSugar()));
         btnSelectAllSugar.setOnClickListener((v -> readFromDbRealm()));
 
-        btnDeleteAllSugar.setOnClickListener((v -> deleteAllSugar()));
-
+//        btnDeleteAllSugar.setOnClickListener((v -> deleteAllSugar()));
     }
 
-    private void initRetrofit() {
-        retrofit = null;
-        try {
-            retrofit = new Retrofit.Builder()
-                    .baseUrl(BASE_URL)
-                    .addConverterFactory(GsonConverterFactory.create())
-                    .build();
-//            restApi = retrofit.create(RestApi.class);
-        } catch (Exception e) {
-            textView.setText("Не создался retrofit" + e.getMessage());
-            return;
-        }
-    }
-
-    private void load() {
-        textView.setText("");
+//    private void initRetrofit() {
 //        retrofit = null;
-        try {
+//        try {
 //            retrofit = new Retrofit.Builder()
 //                    .baseUrl(BASE_URL)
 //                    .addConverterFactory(GsonConverterFactory.create())
 //                    .build();
-//            restApi = retrofit.create(RestApi.class);
-            restApiForUser = retrofit.create(RestApiForUser.class);
-        } catch (Exception e) {
-            textView.setText("Не создался retrofit" + e.getMessage());
-            return;
-        }
+////            restApi = retrofit.create(RestApi.class);
+//        } catch (Exception e) {
+//            textView.setText("Не создался retrofit" + e.getMessage());
+//            return;
+//        }
+//    }
+
+    private void load() {
+        textView.setText("");
+//        retrofit = null;
+//        try {
+//            restApiForUser = retrofit.create(RestApiForUser.class);
+//        } catch (Exception e) {
+//            textView.setText("Не создался retrofit" + e.getMessage());
+//            return;
+//        }
 
         //Вызов на сервер
 //        Call<List<RetrofitModel>> call = restApi.loadUsers();
-        Call<List<RetrofitModel>> call = restApiForUser.loadUser(USER_NAME);
+//        Call<List<RetrofitModel>> call = restApiForUser.loadUser(USER_NAME);
 
         if (internetConnected()) {
             try {
