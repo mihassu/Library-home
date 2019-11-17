@@ -4,12 +4,18 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import javax.inject.Inject;
+
 import io.realm.Realm;
 import io.realm.RealmResults;
 import ru.mihassu.libraryhw.lesson05.entity.NoteRealmData;
 import ru.mihassu.libraryhw.lesson05.model.MyNote;
 
 public class RealmDbImpl implements DbProvider<NoteRealmData, List<MyNote>> {
+
+    @Inject
+    public RealmDbImpl() {
+    }
 
     @Override
     public void insert(NoteRealmData data) {
@@ -28,6 +34,15 @@ public class RealmDbImpl implements DbProvider<NoteRealmData, List<MyNote>> {
     @Override
     public void delete(NoteRealmData data) {
 
+    }
+
+    @Override
+    public void deleteAll() {
+        try (Realm realm = Realm.getDefaultInstance()){
+            realm.beginTransaction();
+            realm.deleteAll();
+            realm.commitTransaction();
+        }
     }
 
     @Override

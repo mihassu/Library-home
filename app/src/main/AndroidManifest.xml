@@ -23,7 +23,7 @@
 
         </activity>
 
-        <activity android:name=".lesson04.RetrofitActivity">
+        <activity android:name=".lesson04.MyActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

@@ -5,6 +5,7 @@ import android.app.Application;
 import io.realm.Realm;
 import io.realm.RealmConfiguration;
 import ru.mihassu.libraryhw.lesson06.di.AppComponent;
+import ru.mihassu.libraryhw.lesson06.di.AppComponentModule;
 import ru.mihassu.libraryhw.lesson06.di.DaggerAppComponent;
 
 public class App extends Application {
@@ -17,7 +18,9 @@ public class App extends Application {
 
         initRealm();
 
-        component = DaggerAppComponent.create();
+        component = DaggerAppComponent.builder()
+                .appComponentModule(new AppComponentModule(getApplicationContext()))
+                .build();
     }
 
     void initRealm() {

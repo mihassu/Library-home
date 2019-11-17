@@ -20,20 +20,20 @@
         android:text="@string/load_json" />
 
     <Button
-        android:id="@+id/button_btnSaveAllSugar"
+        android:id="@+id/button_btnSaveToDb"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/save_to_bd" />
 
     <Button
-        android:id="@+id/button_btnSelectAllSugar"
+        android:id="@+id/button_btnSelectFromDb"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/select_all_from_db" />
 
 
     <Button
-        android:id="@+id/button_btnDeleteAllSugar"
+        android:id="@+id/button_btnDeleteFromDb"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/delete_all_from_db" />
@@ -49,6 +49,11 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:visibility="gone" />
+
+    <TextView
+        android:id="@+id/text_view_operation_info"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
 
 
     <androidx.core.widget.NestedScrollView
